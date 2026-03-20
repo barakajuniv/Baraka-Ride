@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baraka Ride</title>
+
+<style>
+body {
+  font-family: Arial;
+  margin: 20px;
+  background: #f2f2f2;
+}
+.container {
+  max-width: 600px;
+  margin: auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+}
+h2 { text-align: center; }
+
+.autocomplete { position: relative; }
+
+input, select, button {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+button {
+  background: #4CAF50;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover { background: #45a049; }
+
+p {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.autocomplete-items {
+  position: absolute;
+  border: 1px solid #d4d4d4;
+  border-top: none;
+  z-index: 99;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  background: #fff;
+}
+
+.autocomplete-items div {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.autocomplete-items div:hover,
+.autocomplete-active {
+  background-color: #e9e9e9;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h2>Baraka Ride</h2>
+
+<div class="autocomplete">
+<label>Pickup District:</label>
+<input id="pickup" type="text" placeholder="Type pickup district">
+</div>
+
+<div class="autocomplete">
+<label>Destination District:</label>
+<input id="destination" type="text" placeholder="Type destination district">
+</div>
+
+<label>Vehicle Type:</label>
+<select id="vehicle">
+  <option value="PrivateCar">Private Car</option>
+  <option value="Noah">NOAH</option>
+  <option value="HiAce">HiAce</option>
+</select>
+
+<button onclick="calculateFare()">Calculate Fare</button>
+
+<p id="fare"></p>
+</div>
+
+<script>
+
+// 64 districts
+const locations = [
+"Dhaka","Faridpur","Gazipur","Gopalganj","Jamalpur","Kishoreganj","Madaripur","Manikganj","Munshiganj",
+"Mymensingh","Narayanganj","Narsingdi","Netrokona","Rajbari","Shariatpur","Sherpur","Tangail",
+"Bogra","Joypurhat","Naogaon","Natore","Nawabganj","Pabna","Rajshahi","Sirajgonj",
+"Dinajpur","Gaibandha","Kurigram","Lalmonirhat","Nilphamari","Panchagarh","Rangpur","Thakurgaon",
+"Barguna","Barisal","Bhola","Jhalokati","Patuakhali","Pirojpur",
+"Bandarban","Brahmanbaria","Chandpur","Chittagong","Comilla","Cox's Bazar","Feni","Khagrachari","Lakshmipur","Noakhali","Rangamati",
+"Habiganj","Maulvibazar","Sunamganj","Sylhet",
+"Bagerhat","Chuadanga","Jessore","Jhenaidah","Khulna","Kushtia","Magura","Meherpur","Narail","Satkhira"
+];
+
+const vehicleRates = {
+  "PrivateCar": { base: 500, perKm: 15 },
+  "Noah": { base: 0, perKm: 0 },
+  "HiAce": { base: 0, perKm: 0 }
+};
+
+// autocomplete
+function autocomplete(input) {
+  let currentFocus;
+
+  input.addEventListener("input", function() {
+    closeAllLists();
+    const val = this.value;
+    if (!val) return false;
+
+    currentFocus = -1;
+    const list = document.createElement("div");
+    list.setAttribute("class", "autocomplete-items");
+    this.parentNode.appendChild(list);
+
+    locations.forEach(loc => {
+      if (loc.toLowerCase().includes(val.toLowerCase())) {
+        const item = document.createElement("div");
+        item.innerHTML = loc;
+        item.addEventListener("click", function() {
+          input.value = loc;
+          closeAllLists();
+        });
+        list.appendChild(item);
+      }
+    });
+  });
+
+  function closeAllLists(elmnt) {
+    const items = document.getElementsByClassName("autocomplete-items");
+    for (let i = 0; i < items.length; i++) {
+      if (elmnt != items[i] && elmnt != input) {
+        items[i].parentNode.removeChild(items[i]);
+      }
+    }
+  }
+
+  document.addEventListener("click", function (e) {
+    closeAllLists(e.target);
+  });
+}
+
+// init
+autocomplete(document.getElementById("pickup"));
+autocomplete(document.getElementById("destination"));
+
+// fare calculation
+function calculateFare() {
+  const pickup = document.getElementById("pickup").value;
+  const dest = document.getElementById("destination").value;
+  const vehicle = document.getElementById("vehicle").value;
+
+  if (!pickup || !dest) {
+    alert("Please enter both pickup and destination!");
+    return;
+  }
+
+  if (vehicle === "Noah" || vehicle === "HiAce") {
+    document.getElementById("fare").innerText = "Not Available";
+    return;
+  }
+
+  const distanceKm = 100; // demo
+  const rate = vehicleRates[vehicle];
+  const fare = rate.base + (rate.perKm * distanceKm);
+
+  document.getElementById("fare").innerText =
+    `Distance: ${distanceKm} km | Fare: ${fare} BDT`;
+}
+</script>
+
+</body>
+</html>
